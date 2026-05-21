@@ -50,7 +50,7 @@ def get_first_infobox_text(html: str) -> str:
         html - the full html of the page
 
     Returns:
-        html of just the first infobox
+        text of just the first infobox
     """
     soup = BeautifulSoup(html, "html.parser") #BeautfulSoup object
     results = soup.find_all(class_="infobox") #searching for a tag with the CSS class "infobox" 
@@ -64,6 +64,27 @@ def get_first_infobox_text(html: str) -> str:
     if not results:
         raise LookupError("Page has no infobox")
     return results[0].text
+
+
+def extract_wikipedia_text(html: str) -> str:
+    """Extracts all readable text from a Wikipedia page."""
+    soup = BeautifulSoup(html, "html.parser")
+    print(soup)
+    # Main content container
+    content = soup.find_all(class_="mw-content-text")
+    #content = soup.find("div", id="mw-content-text")
+    print(content)
+    if content is None:
+        raise LookupError("Could not find main content area")
+    #return content.text
+    return content[0].text
+    # # Remove elements you probably don't want
+    # for tag in content.find_all(["table", "style", "script", "sup", "span"], recursive=True):
+    #     tag.decompose()
+
+    # # Extract clean text
+    # text = content.get_text(separator="\n", strip=True)
+    # return text
 
 
 def clean_text(text: str) -> str:
@@ -112,7 +133,8 @@ def get_pop_dens(name: str) -> str:
     Returns:
         population density for given country
     """
-    infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
+    # infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
+    infobox_text = clean_text(extract_wikipedia_text(get_page_html(name)))
     print(f"{infobox_text}")
     pattern = r"(?:Density)(?P<pop_dens>.+/km2)"
     error_text = (
@@ -121,6 +143,7 @@ def get_pop_dens(name: str) -> str:
     match = get_match(infobox_text, pattern, error_text)
 
     return match.group("pop_dens")
+
 
 def get_gdp_per_capita(name: str) -> str:
     """Gets birth date of the given person
