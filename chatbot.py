@@ -65,27 +65,48 @@ def get_first_infobox_text(html: str) -> str:
         raise LookupError("Page has no infobox")
     return results[0].text
 
+def get_relative_section(html: str) -> str:
+    """Extracts all readble text from Wikipedia page."""
+    soup = BeautifulSoup(html, "html.parser")
+    results = soup.find_all(id="Section_Title") #class_=mw-headline
+    #print(soup)
+
+    if not results:
+        raise LookupError("Page has no such section") 
+    return results.text
 
 def extract_wikipedia_text(html: str) -> str:
     """Extracts all readable text from a Wikipedia page."""
     soup = BeautifulSoup(html, "html.parser")
     print(soup)
     # Main content container
-    content = soup.find_all(class_="mw-content-text")
-    #content = soup.find("div", id="mw-content-text")
-    print(content)
+    #content = soup.find_all(class_="mw-content-text")
+    content = soup.find("div", id="mw-parser-output")
+    #print(content)
     if content is None:
         raise LookupError("Could not find main content area")
     #return content.text
+    # return content[0].text
+    # Remove elements you probably don't want
+    for tag in content.find_all(["table", "style", "script", "sup", "span"], recursive=True):
+        tag.decompose()
     return content[0].text
-    # # Remove elements you probably don't want
-    # for tag in content.find_all(["table", "style", "script", "sup", "span"], recursive=True):
-    #     tag.decompose()
-
     # # Extract clean text
     # text = content.get_text(separator="\n", strip=True)
     # return text
 
+def get_lead_paragraphs(html: str) -> str:
+    soup = BeautifulSoup(html, "html.parser")
+    content = soup.find("div", {"class": "mw-parser-output"})
+    paragraphs = []
+
+    for child in content.children:
+        if child.name == "p":
+            paragraphs.append(child.get_text(strip=True))
+        elif child.name and child.name.startswith("h"):
+            break
+
+    return "\n\n".join(paragraphs)
 
 def clean_text(text: str) -> str:
     """Cleans given text removing non-ASCII characters and duplicate spaces & newlines
@@ -133,8 +154,9 @@ def get_pop_dens(name: str) -> str:
     Returns:
         population density for given country
     """
-    # infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
-    infobox_text = clean_text(extract_wikipedia_text(get_page_html(name)))
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
+    # infobox_text = clean_text(extract_wikipedia_text(get_page_html(name)))
+    # infobox_text = clean_text(get_lead_paragraphs(get_page_html(name)))
     print(f"{infobox_text}")
     pattern = r"(?:Density)(?P<pop_dens>.+/km2)"
     error_text = (
@@ -164,6 +186,25 @@ def get_gdp_per_capita(name: str) -> str:
 
     return match.group("gdp")
 
+def get_nru(name: str) -> str:
+    """Gets birth date of the given person
+
+    Args:
+        name - name of country
+
+    Returns:
+        real gdp per capita for given country
+    """
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
+    print(f"{infobox_text}")
+    pattern = r"(?:Per capita)(?P<gdp> .\d+,\d+|.\d+)"
+    error_text = (
+        "Page infobox has no natural rate of unemploymnet information"
+    )
+    match = get_match(infobox_text, pattern, error_text)
+
+    return match.group("gdp")
+
 #below are action functions
 
 def pop_density(matches: List[str]) -> List[str]:
@@ -188,6 +229,17 @@ def gdp_per_capita(matches: List[str]) -> List[str]:
     """
     return [get_gdp_per_capita(matches[0])]
 
+def nru(matches: List[str]) -> List[str]:
+    """Returns birth date of named person in matches
+
+    Args:
+        matches - match from pattern of country's name to find natural rate of unemployment of
+
+    Returns:
+        NRU of given country
+    """
+    return [get_nru(matches[0])]
+
 # dummy argument is ignored and doesn't matter
 def bye_action(dummy: List[str]) -> None:
     raise KeyboardInterrupt
@@ -202,6 +254,7 @@ Action = Callable[[List[str]], List[Any]]
 pa_list: List[Tuple[Pattern, Action]] = [
     ("what is the population density of %".split(), pop_density),
     ("what is % gdp per capita".split(), gdp_per_capita),
+    ("what is the natural unemployment rate of %".split(), nru),
     (["bye"], bye_action),
 ]
 
