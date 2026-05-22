@@ -65,7 +65,7 @@ def get_first_infobox_text(html: str) -> str:
         raise LookupError("Page has no infobox")
     return results[0].text
 
-def get_relative_section(html: str) -> str:
+def get_relevant_section(html: str) -> str:
     """Extracts all readble text from Wikipedia page."""
     soup = BeautifulSoup(html, "html.parser")
     results = soup.find_all(id="Section_Title") #class_=mw-headline
