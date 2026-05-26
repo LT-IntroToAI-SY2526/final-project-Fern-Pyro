@@ -197,13 +197,32 @@ def get_nru(name: str) -> str:
     """
     infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
     print(f"{infobox_text}")
-    pattern = r"(?:Unemployment)(?P<nru> .\d+,\d+|.\d+)"
+    pattern = r"(?:Unemployment)(?P<nru>\d+)"
     error_text = (
         "Page infobox has no natural rate of unemployment information"
     )
     match = get_match(infobox_text, pattern, error_text)
 
     return match.group("nru")
+
+def get_off_lang(name: str) -> str:
+    """Gets official language of the given country
+
+    Args:
+        name - name of country
+
+    Returns:
+        official language for given country
+    """
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
+    print(f"{infobox_text}")
+    pattern = r"(?:Official language)(?P<lang>\w+)"
+    error_text = (
+        "Page infobox has no official language information"
+    )
+    match = get_match(infobox_text, pattern, error_text)
+
+    return match.group("lang")
 
 #below are action functions
 
@@ -240,6 +259,17 @@ def nru(matches: List[str]) -> List[str]:
     """
     return [get_nru(matches[0])]
 
+def off_lang(matches: List[str]) -> List[str]:
+    """Returns official language of named country in matches
+
+    Args:
+        matches - match from pattern of country's name to find official language of
+
+    Returns:
+        official language of given country
+    """
+    return [get_off_lang(matches[0])]
+
 # dummy argument is ignored and doesn't matter
 def bye_action(dummy: List[str]) -> None:
     raise KeyboardInterrupt
@@ -255,7 +285,7 @@ pa_list: List[Tuple[Pattern, Action]] = [
     ("what is the population density of %".split(), pop_density),
     ("what is % gdp per capita".split(), gdp_per_capita),
     ("what is the natural unemployment rate of %".split(), nru),
-    #("what is the official language of %".split(), off_lang),
+    ("what is the official language of %".split(), off_lang),
     # ("what is the official language of %".split(), lambda matches: [get_relevant_section(get_page_html(matches[0]))]),
     (["bye"], bye_action),
 ]
