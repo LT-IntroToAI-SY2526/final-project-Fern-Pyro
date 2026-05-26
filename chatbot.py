@@ -68,12 +68,18 @@ def get_first_infobox_text(html: str) -> str:
 def get_relevant_section(html: str) -> str:
     """Extracts all readble text from Wikipedia page."""
     soup = BeautifulSoup(html, "html.parser")
-    results = soup.find_all(id="Section_Title") #class_=mw-headline
-    #print(soup)
 
-    if not results:
-        raise LookupError("Page has no such section") 
-    return results.text
+    # for header in soup.find_all(["h2", "h3"]):
+    #     title = header.get_text(strip=True).lower()
+    #     if any(keyword in title for keyword in ["economy", "labor", "employment", "unemployment"]):
+    # 
+    #     
+    #results = soup.find_all(id="Section_Title") #class_=mw-headline
+    # print(soup)
+
+    # if not results:
+    #     raise LookupError("Page has no such section") 
+    # return results[0].text
 
 def extract_wikipedia_text(html: str) -> str:
     """Extracts all readable text from a Wikipedia page."""
@@ -195,13 +201,14 @@ def get_nru(name: str) -> str:
     Returns:
         natural rate of unemployment for given country
     """
-    infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
-    print(f"{infobox_text}")
+    page_text = clean_text(get_relevant_section(get_page_html(name)))
+    #infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
+    print(f"{page_text}")
     pattern = r"(?:Unemployment)(?P<nru>\d+)"
     error_text = (
         "Page infobox has no natural rate of unemployment information"
     )
-    match = get_match(infobox_text, pattern, error_text)
+    match = get_match(page_text, pattern, error_text)
 
     return match.group("nru")
 
@@ -216,7 +223,7 @@ def get_off_lang(name: str) -> str:
     """
     infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
     print(f"{infobox_text}")
-    pattern = r"(?:Official language)(?P<lang>\w+)"
+    pattern = r"(?:Official languages)(?P<lang>\w+ \w+)"
     error_text = (
         "Page infobox has no official language information"
     )
