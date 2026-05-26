@@ -255,6 +255,8 @@ pa_list: List[Tuple[Pattern, Action]] = [
     ("what is the population density of %".split(), pop_density),
     ("what is % gdp per capita".split(), gdp_per_capita),
     ("what is the natural unemployment rate of %".split(), nru),
+    ("what is the official language of %".split(), off_lang),
+    # ("what is the official language of %".split(), lambda matches: [get_relevant_section(get_page_html(matches[0]))]),
     (["bye"], bye_action),
 ]
 
