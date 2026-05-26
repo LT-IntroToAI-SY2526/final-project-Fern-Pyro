@@ -146,7 +146,7 @@ def get_match(
     return match
 
 def get_pop_dens(name: str) -> str:
-    """Gets birth date of the given person
+    """Gets population density of the given country
 
     Args:
         name - name of country
@@ -168,7 +168,7 @@ def get_pop_dens(name: str) -> str:
 
 
 def get_gdp_per_capita(name: str) -> str:
-    """Gets birth date of the given person
+    """Gets gdp per capita of the given country
 
     Args:
         name - name of country
@@ -187,28 +187,28 @@ def get_gdp_per_capita(name: str) -> str:
     return match.group("gdp")
 
 def get_nru(name: str) -> str:
-    """Gets birth date of the given person
+    """Gets natural rate of unemployment of the given country
 
     Args:
         name - name of country
 
     Returns:
-        real gdp per capita for given country
+        natural rate of unemployment for given country
     """
     infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
     print(f"{infobox_text}")
-    pattern = r"(?:Per capita)(?P<gdp> .\d+,\d+|.\d+)"
+    pattern = r"(?:Unemployment)(?P<nru> .\d+,\d+|.\d+)"
     error_text = (
-        "Page infobox has no natural rate of unemploymnet information"
+        "Page infobox has no natural rate of unemployment information"
     )
     match = get_match(infobox_text, pattern, error_text)
 
-    return match.group("gdp")
+    return match.group("nru")
 
 #below are action functions
 
 def pop_density(matches: List[str]) -> List[str]:
-    """Returns birth date of named person in matches
+    """Returns population density of named country in matches
 
     Args:
         matches - match from pattern of country's name to find population density of
@@ -219,7 +219,7 @@ def pop_density(matches: List[str]) -> List[str]:
     return [get_pop_dens(matches[0])]
 
 def gdp_per_capita(matches: List[str]) -> List[str]:
-    """Returns birth date of named person in matches
+    """Returns gdp per capita of named country in matches
 
     Args:
         matches - match from pattern of country's name to find gdp per capita of
@@ -230,7 +230,7 @@ def gdp_per_capita(matches: List[str]) -> List[str]:
     return [get_gdp_per_capita(matches[0])]
 
 def nru(matches: List[str]) -> List[str]:
-    """Returns birth date of named person in matches
+    """Returns UE rate of named country in matches
 
     Args:
         matches - match from pattern of country's name to find natural rate of unemployment of
@@ -255,7 +255,7 @@ pa_list: List[Tuple[Pattern, Action]] = [
     ("what is the population density of %".split(), pop_density),
     ("what is % gdp per capita".split(), gdp_per_capita),
     ("what is the natural unemployment rate of %".split(), nru),
-    ("what is the official language of %".split(), off_lang),
+    #("what is the official language of %".split(), off_lang),
     # ("what is the official language of %".split(), lambda matches: [get_relevant_section(get_page_html(matches[0]))]),
     (["bye"], bye_action),
 ]
