@@ -69,10 +69,15 @@ def get_relevant_section(html: str) -> str:
     """Extracts all readble text from Wikipedia page."""
     soup = BeautifulSoup(html, "html.parser")
 
-    # for header in soup.find_all(["h2", "h3"]):
-    #     title = header.get_text(strip=True).lower()
-    #     if any(keyword in title for keyword in ["economy", "labor", "employment", "unemployment"]):
-    # 
+    for header in soup.find_all(["h2", "h3"]): #finds all the <h2> and <h3> tags and loops through all string matches 
+        title = header.get_text(strip=True).lower()
+        if any(keyword in title for keyword in ["economy", "labor", "employment", "unemployment"]):
+            next_node = header.find_next_sibling()
+            while next_node and next_node.name not in ["p", "table"]:
+                # next_node = next_node.find_next() #find_next uses .next_element to iterate over any tags/string that follow (returns first match only)
+                next_node = next_node.find_next_sibling()
+            if next_node:
+                return next_node.get_text(" ", strip=True)
     #     
     #results = soup.find_all(id="Section_Title") #class_=mw-headline
     # print(soup)
@@ -80,6 +85,15 @@ def get_relevant_section(html: str) -> str:
     # if not results:
     #     raise LookupError("Page has no such section") 
     # return results[0].text
+#Note: line 72 - #passing in a list allows Beatiful Soup to string0 match against any item in the list
+
+# Structure of an HTML Tree aka Document Object Model (DOM)
+    # Root node - the starting point of the tree, which is always indicated by the
+    # <html> element
+    # Parent node - an element that wraps aorund another element
+    #   ex. <body> is a parent of the <div> placed inside of it
+    # Child node - an element that is nested directly inside another element
+    # Sibling nodes - elemenst that share the same parent node
 
 def extract_wikipedia_text(html: str) -> str:
     """Extracts all readable text from a Wikipedia page."""
