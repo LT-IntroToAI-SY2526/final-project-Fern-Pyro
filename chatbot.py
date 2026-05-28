@@ -283,6 +283,24 @@ def get_currency(name: str) -> str:
 
     return match.group("currency")
 
+def get_zone(name: str) -> str:
+    """Gets time zone of the given country
+
+    Args:
+        name - name of country
+
+    Returns:
+        time zone for given country
+    """
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
+    print(f"{infobox_text}")
+    pattern = r"(?:Time zone)(?P<zone>.+)"
+    error_text = (
+        "Page infobox has no time zone information"
+    )
+    match = get_match(infobox_text, pattern, error_text)
+
+    return match.group("zone")
 
 #below are action functions
 
@@ -352,6 +370,17 @@ def curr(matches: List[str]) -> List[str]:
     """
     return [get_currency(matches[0])]
 
+def zone(matches: List[str]) -> List[str]:
+    """Returns time zone of named country in matches
+
+    Args:
+        matches - match from pattern of country's name to find time zone of
+
+    Returns:
+        time zone of given country
+    """
+    return [get_zone(matches[0])]
+
 # dummy argument is ignored and doesn't matter
 def bye_action(dummy: List[str]) -> None:
     raise KeyboardInterrupt
@@ -369,8 +398,8 @@ pa_list: List[Tuple[Pattern, Action]] = [
     ("what is the natural unemployment rate of %".split(), nru),
     ("what is the official language of %".split(), off_lang),
     ("what is the capital of %".split(), capital),
-    ("what is the currency of %".split(), curr)
-    (?:Time xone)
+    ("what is the currency of %".split(), curr),
+    ("what time zone is % in".split(), zone),
     # ("what is the official language of %".split(), lambda matches: [get_relevant_section(get_page_html(matches[0]))]),
     (["bye"], bye_action),
 ]
