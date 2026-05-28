@@ -62,7 +62,7 @@ def get_first_infobox_text(html: str) -> str:
 #         - scr and alt are attributes of the <img> tag
 
     if not results:
-        raise LookupError("Page has no infobox")
+        raise LookupError("Page has no infobox")    
     return results[0].text
 
 def get_relevant_section(html: str) -> str:
@@ -245,6 +245,25 @@ def get_off_lang(name: str) -> str:
 
     return match.group("lang")
 
+def get_capital(name: str) -> str:
+    """Gets capital of the given country
+
+    Args:
+        name - name of country
+
+    Returns:
+        capital for given country
+    """
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
+    print(f"{infobox_text}")
+    pattern = r"(?:Capital)(?P<capital>\w+ \w+|\w+)"
+    error_text = (
+        "Page infobox has no capital information"
+    )
+    match = get_match(infobox_text, pattern, error_text)
+
+    return match.group("capital")
+
 #below are action functions
 
 def pop_density(matches: List[str]) -> List[str]:
@@ -291,6 +310,17 @@ def off_lang(matches: List[str]) -> List[str]:
     """
     return [get_off_lang(matches[0])]
 
+def capital(matches: List[str]) -> List[str]:
+    """Returns capital of named country in matches
+
+    Args:
+        matches - match from pattern of country's name to find capital of
+
+    Returns:
+        capital of given country
+    """
+    return [get_capital(matches[0])]
+
 # dummy argument is ignored and doesn't matter
 def bye_action(dummy: List[str]) -> None:
     raise KeyboardInterrupt
@@ -307,6 +337,7 @@ pa_list: List[Tuple[Pattern, Action]] = [
     ("what is % gdp per capita".split(), gdp_per_capita),
     ("what is the natural unemployment rate of %".split(), nru),
     ("what is the official language of %".split(), off_lang),
+    ("what is the capital of %".split(), capital),
     # ("what is the official language of %".split(), lambda matches: [get_relevant_section(get_page_html(matches[0]))]),
     (["bye"], bye_action),
 ]
